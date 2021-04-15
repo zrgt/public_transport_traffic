@@ -1,0 +1,37 @@
+import time
+
+import requests
+import datetime
+import json
+
+TRAM_ROUTE_IDS = "1-1,8-1,10-1,9-1,11-1,12-1"
+
+
+def get_vehicle_markers(output_file):
+    url = "http://bus03.ru/php/getVehiclesMarkers.php"
+    params = {
+        'rids': TRAM_ROUTE_IDS,
+        'lat0': 0,
+        'lng0': 0,
+        'lat1': 90,
+        'lng1': 180,
+        'curk': 0,
+        'city': "ulanude",
+        # 'info': "0123",
+        # 'time': extended
+    }
+
+    data = {"datetime": datetime.datetime.now().strftime("%H:%M:%S %d-%M-%Y")}
+    response = requests.get(url, params=params)
+    data.update(response.json())
+    #data['response'].get("profiles")
+
+    with open(output_file, "w", encoding="utf-8") as file:
+        json.dump(data, file, ensure_ascii=False)
+
+    print(data)
+
+
+for i in range(80):
+    get_vehicle_markers(f"tram_positions/tram_pos_{i}.json")
+    time.sleep(30)
