@@ -24,3 +24,19 @@ def speed(lon1, lat1, lon2, lat2, time1, time2):
     m_per_sec = distance/tdelta.total_seconds()
     kmh = m_per_sec*60*60/1000
     return kmh
+
+
+def geographic_to_web_mercator(x_lon, y_lat):
+    return lon_to_x_mercator(x_lon), lat_to_y_mercator(y_lat)
+
+
+def lon_to_x_mercator(lon):
+    num = lon * 0.017453292519943295 / 10**6
+    x_mercator = 6378137.0 * num
+    return x_mercator
+
+
+def lat_to_y_mercator(lat):
+    a = lat * 0.017453292519943295 / 10**6
+    y_mercator = 3189068.5 * math.log((1.0 + math.sin(a)) / (1.0 - math.sin(a)))
+    return y_mercator
