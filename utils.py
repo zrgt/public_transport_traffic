@@ -40,3 +40,12 @@ def lat_to_y_mercator(lat):
     a = lat * 0.017453292519943295 / 10**6
     y_mercator = 3189068.5 * math.log((1.0 + math.sin(a)) / (1.0 - math.sin(a)))
     return y_mercator
+
+
+def speed_color(kmh):
+    if kmh < 7:
+        return "red"
+    elif kmh < 15:
+        return "yellow"
+    else:
+        return "green"
