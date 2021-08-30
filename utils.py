@@ -1,5 +1,8 @@
 import math
 
+import numpy
+from bokeh.palettes import RdYlGn
+
 
 def distance(lat1, lon1, lat2, lon2): # generally used geo measurement function
     if lat1 > 10**6:
@@ -26,10 +29,9 @@ def distance(lat1, lon1, lat2, lon2): # generally used geo measurement function
 # 52.284568, 104.283160
 
 def speed(lat1, lon1, lat2, lon2, time1, time2):
-    distance = distance(lat1, lon1, lat2, lon2)
     tdelta = time2 - time1
 
-    speed_mps = distance/tdelta.total_seconds()
+    speed_mps = distance(lat1, lon1, lat2, lon2)/tdelta.total_seconds()
     speed_kmh = (speed_mps*60*60)/1000
     return speed_kmh
 
@@ -46,14 +48,46 @@ def lon_to_x_mercator(lon):
 
 def lat_to_y_mercator(lat):
     a = lat * 0.017453292519943295 / 10**6
-    y_mercator = 3189068.5 * math.log((1.0 + math.sin(a)) / (1.0 - math.sin(a)))
+    try:
+        y_mercator = 3189068.5 * math.log((1.0 + math.sin(a)) / (1.0 - math.sin(a)))
+    except TypeError:
+        y_mercator = 3189068.5 * numpy.log((1.0 + numpy.sin(a)) / (1.0 - numpy.sin(a)))
     return y_mercator
 
+def irkbus_x_to_lon(x):
+    res = (x + 4781809) / 1200000  # 104.27
+    return res*10**6
+
+def irkbus_y_to_lat(y):
+    res = (y + 9492147) / 1900000  # 52.28
+    return res*10**6
 
 def speed_color(kmh):
+    colors = list(RdYlGn[11])
+    colors.reverse()
+    if kmh<22:
+        color = colors[int(kmh/2)]
+    else:
+        color = colors[10]
+    return color
     if kmh < 8:
         return "red"
     elif kmh < 18:
         return "yellow"
     else:
         return "green"
+
+def pd_speed_color(row):
+    colors = list(RdYlGn[11])
+    colors.reverse()
+    if row.speed < 8:
+        row.color = "red"
+    elif row.speed < 18:
+        row.color = "yellow"
+    else:
+        row.color = "green"
+    # if row.speed<22:
+    #     row.color = colors[int(row.speed / 2)]
+    # else:
+    #     row.color = colors[10]
+    return row
