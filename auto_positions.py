@@ -39,7 +39,7 @@ def generate_auto_positions(n=120):
 
     for i in range(n):
         print(i)
-        with open(f"all_positions/all_pos_{i}.json", "r") as file:
+        with open(f"tram_positions/tram_pos_{i}.json", "r") as file:
             a = json.load(file)
             autos_dict = a["anims"]
         for i in autos_dict:
@@ -53,18 +53,18 @@ def generate_auto_positions(n=120):
 
 
 def generate_file():
-    autos = generate_auto_positions(120)
+    autos = generate_auto_positions(80)
     final_dict = defaultdict()
 
-    for i in range(120):
+    for i in range(80):
         print(i)
-        with open(f"all_positions/all_pos_{i}.json", "r") as file:
+        with open(f"tram_positions/tram_pos_{i}.json", "r") as file:
             full_dict = json.load(file)
             autos_dict = full_dict["anims"]
         for auto in autos_dict:
-            for key in ("speed", "wifi", "anim_key", "big_jump", "anim_points"):
-                auto.pop(key)
             auto["speed"]=autos[auto["id"]].speed(time=auto["lasttime"])
         final_dict[i] = autos_dict
     with open("all_pos.json", "w") as file:
         json.dump(final_dict, file, ensure_ascii=False)
+
+generate_file()

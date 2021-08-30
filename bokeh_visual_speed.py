@@ -26,7 +26,7 @@ for tool in graph.toolbar.tools:
 graph.add_tile(tile_provider)
 graph.grid.visible = False
 
-with open(FILE, "r") as file:
+with open(FILE, "r", encoding='utf-8') as file:
     all_pos_data = list(json.load(file).values())
     all_pos_x, all_pos_y, all_speeds, all_colors, all_routes, all_angles = [], [], [], [], [], []
     for pos in all_pos_data:
