@@ -11,3 +11,4 @@ typing_extensions >=3.7.4
 bokeh
 schedule
 pandas
+scipy
