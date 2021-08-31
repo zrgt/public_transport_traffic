@@ -23,6 +23,7 @@ def get_dataframe(file):
 
     df = pd.DataFrame(geo_markers)
     df.drop_duplicates(inplace=True)
+    df.drop_duplicates(subset=["lon", "lat", "lasttime"], inplace=True)
     # drop useless data column
     df.drop(["low_floor"], axis=1, inplace=True)
     # drop all vehicles except trams

@@ -2,8 +2,7 @@ from typing import List
 
 import bokeh
 from bokeh.io import curdoc
-from bokeh.layouts import widgetbox
-from bokeh.models import HoverTool, CheckboxGroup, CustomJSFilter, CustomJS, Button
+from bokeh.models import HoverTool, CheckboxGroup, CustomJSFilter, CustomJS, Button, Column
 from bokeh.plotting import figure
 from bokeh.tile_providers import get_provider, CARTODBPOSITRON
 
@@ -82,4 +81,4 @@ def get_checkboxes_with_filter(labels: List[str], column_label: str, source, sel
         """))
         widgets.append(clear_all)
 
-    return widgetbox(*widgets), filter
+    return Column(*widgets), filter
