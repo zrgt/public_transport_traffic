@@ -37,10 +37,15 @@ def get_dataframe(file):
 
     # fix time: drop day data and change timezone
     def fix_time(row):
-        time = datetime.datetime.strptime(row.lasttime, "%d.%m.%Y %H:%M:%S")
-        time = time.replace(hour=time.hour + 8)
-        row.lasttime = time.strftime("%H:%M:%S")
+        lasttime = datetime.datetime.strptime(row.lasttime, "%d.%m.%Y %H:%M:%S")
+        lasttime = lasttime+datetime.timedelta(hours=8)
+        #lasttime = pytz.timezone("Asia/Irkutsk").localize(lasttime)
+        row.lasttime = str(lasttime)
+        row.time = lasttime.strftime("%H:%M:%S")
+        row.timestamp = lasttime.timestamp()
         return row
+    df["time"] = None
+    df["timestamp"] = None
     df = df.apply(fix_time, axis="columns")
 
     # add column data for point color and fill it with data
@@ -55,8 +60,10 @@ def get_dataframe(file):
     df["size"].fillna(7, inplace=True)
     df["size"] = df["size"].astype("int32")
 
+    df["size"] = 10 #FIXME
+
     # rename data columns in dataframe
-    df.rename(columns={"lon":"x", "lat":"y", "lasttime":"time", "rnum":"num"}, inplace=True)
+    df.rename(columns={"lon":"x", "lat":"y", "rnum":"num"}, inplace=True)
     print(df.head)
 
     end_time = datetime.datetime.now()

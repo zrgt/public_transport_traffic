@@ -11,7 +11,7 @@ GRAPH_WIDTH = 800
 GRAPH_HEIGHT = 800
 GRAPH_MAP_PROVIDER = get_provider(CARTODBPOSITRON)
 GRAPH_TITLE = "Ulan-Ude"
-GRAPH_TOOLS = "hover,pan,wheel_zoom,zoom_in,zoom_out,box_zoom,reset,save"
+GRAPH_TOOLS = "hover,pan,wheel_zoom,zoom_in,zoom_out,box_select, lasso_select, reset,save"
 THEME = "dark_minimal"
 
 UU_LON_RANGE = (11975000, 11987000)
