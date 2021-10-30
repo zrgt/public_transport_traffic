@@ -75,7 +75,7 @@ def get_checkboxes_with_filter(labels: List[str], column_label: str, source, sel
         widgets.append(select_all)
 
     if clear_all_btn:
-        clear_all = Button(label="отчистить", width=65, height=30)
+        clear_all = Button(label="отчистить все", width=65, height=30)
         clear_all.js_on_click(CustomJS(args=dict(checkboxes=checkboxes), code="""
             checkboxes.active = []
         """))
