@@ -10,11 +10,14 @@ import bokeh.models as bmo
 from dataframe import get_dataframe
 from graph_utils import init_map_graph, get_checkboxes_with_filter
 
+#TODO посчитать правильные ли скорости
+#TODO
+
 start_time = datetime.datetime.now()
 FILE = f"all_pos.json"
 
 #init graph
-graph = init_map_graph(title="Средняя скорость трамвая в понедельник 19 апреля 2021 между 8-9ч")
+graph = init_map_graph(title="Скорость трамвая в среду 1 сентября 2021")
 
 df = get_dataframe(FILE)
 
@@ -94,7 +97,18 @@ source_table = ColumnDataSource()
 source_visible.selected.js_on_change('indices', CustomJS(args=dict(s1=source_visible, s2=source_table), code="""
         var inds = cb_obj.indices;
         var d1 = s1.data;
-        s2.data = {"gos_num":[],"num":[],"speed":[],"time":[],"secs_frm_lst_pos":[],"meters_frm_lst_pos":[]};
+        s2.data = {
+            "lon":[],
+            "lat":[],
+            "gos_num":[],
+            "num":[],
+            "speed":[],
+            "time":[],
+            "timestamp":[],
+            "secs_frm_lst_pos":[],
+            "meters_frm_lst_pos":[],
+            "secs_in_jam":[],
+            };
         var d2 = s2.data;
         d2['gos_num'] = [];
         d2['num'] = [];
@@ -103,22 +117,46 @@ source_visible.selected.js_on_change('indices', CustomJS(args=dict(s1=source_vis
             d2['num'].push(d1['num'][inds[i]]);
             d2['speed'].push(d1['speed'][inds[i]]);
             d2['time'].push(d1['time'][inds[i]]);
+            d2['timestamp'].push(d1['timestamp'][inds[i]]);
             d2['secs_frm_lst_pos'].push(d1['secs_frm_lst_pos'][inds[i]]);
+            d2['secs_in_jam'].push(null);
             d2['meters_frm_lst_pos'].push(d1['meters_frm_lst_pos'][inds[i]]);
+            d2['lon'].push(d1['lon'][inds[i]]);
+            d2['lat'].push(d1['lat'][inds[i]]);
         }
+        
+        var gos_nums = new Set(d2['gos_num']);
+        console.log(gos_nums);
+        gos_nums = Array.from(gos_nums)
+        console.log(gos_nums);
+        console.log(gos_nums.length);
+        for (var i = 0; i < gos_nums.length; i++) {
+            console.log(i);
+            var curr_gos_num = gos_nums[i];
+            console.log(curr_gos_num);
+            var firsttime_veh = d2['gos_num'].indexOf(curr_gos_num);
+            console.log(firsttime_veh);
+            var lasttime_veh = d2['gos_num'].lastIndexOf(curr_gos_num);
+            console.log(lasttime_veh);
+            var duration = d2['timestamp'][lasttime_veh] - d2['timestamp'][firsttime_veh]
+            d2['secs_in_jam'][firsttime_veh] = duration;
+            
+        }
+        
         s2.change.emit();
     """)
 )
 columns = [
-        TableColumn(field="gos_num", title="Госномер"),
+        TableColumn(field="gos_num", title="Номер"),
         TableColumn(field="num", title="Маршрут"),
         TableColumn(field="time", title="Время"),
-        TableColumn(field="speed", title="Скорость"),
-        TableColumn(field="secs_frm_lst_pos", title="Промежуток (Сек)"),
-        TableColumn(field="meters_frm_lst_pos", title="Промежуток (М)"),
+        TableColumn(field="speed", title="Ск-сть"),
+        TableColumn(field="secs_in_jam", title="В пробке(Сек)"),
+        # TableColumn(field="secs_frm_lst_pos", title="Промежуток(Сек)"),
+        # TableColumn(field="meters_frm_lst_pos", title="Промежуток(М)"),
     ]
-text_banner = Paragraph(text="Выбранные геометки", width=200, height=40)
-data_table = DataTable(source=source_table, columns=columns, width=600, height=600)
+text_banner = Paragraph(text="Выбранные геометки", width=200, height=20)
+data_table = DataTable(source=source_table, columns=columns, width=600, height=700)
 
 
 view = CDSView(source=source_visible, filters=[time_filter, speed_filter, routes_filter, gos_num_filter])
