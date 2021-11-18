@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from typing import List
 
 import utils
-from marker_namen import MARK_FILES, MARK_FILES_LIGHT
+from marker_namen import MARK_FILES
 
 JAM_SPEED = 8
 
@@ -28,15 +28,25 @@ class Auto:
 
     def append_position(self, lon, lat, time: str):
         time = datetime.datetime.strptime(time, "%d.%m.%Y %H:%M:%S")
-        self.positions[time] = Position(lon, lat, time)
-        if len(self.positions) > 1:
-            prev_pos_val = list(self.positions.values())[-2]
-            speed = utils.speed(prev_pos_val.lat, prev_pos_val.lon, lat, lon, prev_pos_val.time, time)
-            speed = round(speed, 1)
-            self.positions[time].speed = speed
-            self.positions[time].in_jam = True if (speed < JAM_SPEED and prev_pos_val.speed < JAM_SPEED) else False
-            self.positions[time].secs_frm_lst_pos = (time - prev_pos_val.time).total_seconds()
-            self.positions[time].meters_frm_lst_pos = utils.distance(prev_pos_val.lat, prev_pos_val.lon, lat, lon)
+        pos = Position(lon, lat, time)
+        self.positions[time] = pos
+        if len(self.positions) > 2:
+            prev_pos = list(self.positions.values())[-2]
+            prev_prev_pos = list(self.positions.values())[-3]
+
+            pos.secs_frm_lst_pos = (time - prev_pos.time).total_seconds()
+            pos.meters_frm_lst_pos = utils.distance(prev_pos.lat, prev_pos.lon, lat, lon)
+            pos.speed = round(utils.speed(prev_pos.lat, prev_pos.lon, lat, lon, prev_pos.time, time), 1)
+
+            if pos.speed < JAM_SPEED and prev_pos.speed < JAM_SPEED and pos.secs_frm_lst_pos > 50:
+                pos.in_jam = True
+                prev_pos.in_jam = True
+            if pos.speed < JAM_SPEED and prev_pos.speed < JAM_SPEED and prev_prev_pos.speed < JAM_SPEED:
+                pos.in_jam = True
+                prev_pos.in_jam = True
+                prev_prev_pos.in_jam = True
+            else:
+                pos.in_jam = False
 
     def position(self, time: str):
         time = datetime.datetime.strptime(time, "%d.%m.%Y %H:%M:%S")
