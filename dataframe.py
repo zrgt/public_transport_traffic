@@ -30,8 +30,8 @@ def get_dataframe(file):
     indexNotTrams = df[df["rtype"] != "Тр"].index
     df.drop(index=indexNotTrams, inplace=True)
     # change geo data in standard for maps
-    df["lon"] = lon_to_x_mercator(df["lon"])
-    df["lat"] = lat_to_y_mercator(df["lat"])
+    df["lon_mercator"] = lon_to_x_mercator(df["lon"])
+    df["lat_mercator"] = lat_to_y_mercator(df["lat"])
 
     df["route"] = df["rtype"]+"-"+df["rnum"]
 
@@ -63,7 +63,7 @@ def get_dataframe(file):
     df["size"] = 10 #FIXME
 
     # rename data columns in dataframe
-    df.rename(columns={"lon":"x", "lat":"y", "rnum":"num"}, inplace=True)
+    df.rename(columns={"lon_mercator":"x", "lat_mercator":"y", "rnum":"num"}, inplace=True)
     print(df.head)
 
     end_time = datetime.datetime.now()

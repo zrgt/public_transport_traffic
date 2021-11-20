@@ -1,14 +1,15 @@
 import datetime
 
 from bokeh.layouts import column, row
-from bokeh.models import Slider, CustomJS, ColumnDataSource, CustomJSFilter, CDSView, Spinner, RangeSlider, DateRangeSlider, Paragraph, TableColumn, DataTable
+from bokeh.models import Slider, CustomJS, ColumnDataSource, CustomJSFilter, CDSView, Spinner, RangeSlider, \
+    DateRangeSlider, Paragraph, TableColumn, DataTable
 
 from bokeh.plotting import show
 from scipy.spatial.distance import pdist, squareform
 import bokeh.models as bmo
 
 from dataframe import get_dataframe
-from graph_utils import init_map_graph, get_checkboxes_with_filter
+from graph_utils import init_map_graph, get_checkboxes_with_filter, get_checkbox_btn_with_filter
 
 #TODO посчитать правильные ли скорости
 #TODO
@@ -33,15 +34,20 @@ gos_num_list = list(df.gos_num.unique())
 gos_num_list.sort()
 gos_num_checkboxes, gos_num_filter = get_checkboxes_with_filter(labels=gos_num_list, column_label="gos_num", source=source_visible)
 
+# in jam checkbox
+in_jam_list = list(df.in_jam.unique())
+in_jam_checkboxes, in_jam_filter = get_checkbox_btn_with_filter(labels=["В пробке"], column_label="in_jam", source=source_visible)
+
 # range slider for speeds
 min_speed = df.speed.min()
 max_speed = df.speed.max()
 speed_slider = RangeSlider(
     title="Скорость транспорта (км/ч)",
     start=min_speed,
-    end=max_speed,
+    # end=max_speed,
+    end=55,
     step=1,
-    value=(min_speed, max_speed),
+    value=(min_speed, 55),
 )
 speed_filter = CustomJSFilter(code='''
 var min_speed = speed_slider.value[0]
@@ -108,6 +114,7 @@ source_visible.selected.js_on_change('indices', CustomJS(args=dict(s1=source_vis
             "secs_frm_lst_pos":[],
             "meters_frm_lst_pos":[],
             "secs_in_jam":[],
+            "mins_in_jam":[],
             };
         var d2 = s2.data;
         d2['gos_num'] = [];
@@ -120,6 +127,7 @@ source_visible.selected.js_on_change('indices', CustomJS(args=dict(s1=source_vis
             d2['timestamp'].push(d1['timestamp'][inds[i]]);
             d2['secs_frm_lst_pos'].push(d1['secs_frm_lst_pos'][inds[i]]);
             d2['secs_in_jam'].push(null);
+            d2['mins_in_jam'].push(null);
             d2['meters_frm_lst_pos'].push(d1['meters_frm_lst_pos'][inds[i]]);
             d2['lon'].push(d1['lon'][inds[i]]);
             d2['lat'].push(d1['lat'][inds[i]]);
@@ -140,6 +148,7 @@ source_visible.selected.js_on_change('indices', CustomJS(args=dict(s1=source_vis
             console.log(lasttime_veh);
             var duration = d2['timestamp'][lasttime_veh] - d2['timestamp'][firsttime_veh]
             d2['secs_in_jam'][firsttime_veh] = duration;
+            d2['mins_in_jam'][firsttime_veh] = (duration/60).toFixed(2);
             
         }
         
@@ -151,15 +160,16 @@ columns = [
         TableColumn(field="num", title="Маршрут"),
         TableColumn(field="time", title="Время"),
         TableColumn(field="speed", title="Ск-сть"),
-        TableColumn(field="secs_in_jam", title="В пробке(Сек)"),
+        TableColumn(field="secs_in_jam", title="Интервал(Сек)"),
+        TableColumn(field="mins_in_jam", title="Интерв.(Минут)"),
         # TableColumn(field="secs_frm_lst_pos", title="Промежуток(Сек)"),
         # TableColumn(field="meters_frm_lst_pos", title="Промежуток(М)"),
     ]
 text_banner = Paragraph(text="Выбранные геометки", width=200, height=20)
-data_table = DataTable(source=source_table, columns=columns, width=600, height=700)
+data_table = DataTable(source=source_table, columns=columns, width=600, height=700, aspect_ratio="auto")
 
 
-view = CDSView(source=source_visible, filters=[time_filter, speed_filter, routes_filter, gos_num_filter])
+view = CDSView(source=source_visible, filters=[time_filter, speed_filter, routes_filter, gos_num_filter, in_jam_filter])
 
 # plotting the graph
 points = graph.scatter("x", "y", source=source_visible, fill_color="color", size="size",
@@ -169,5 +179,5 @@ spinner.js_link('value', points.glyph, 'size')
 
 
 # displaying the model
-layout = row(column(graph, time_slider,  speed_slider), column(spinner), column(routes_checkboxes, width=60), column(gos_num_checkboxes, width=60), column(text_banner, data_table))
+layout = row(column(graph, time_slider,  speed_slider, row(spinner, in_jam_checkboxes)), column(routes_checkboxes, width=60), column(gos_num_checkboxes, width=60), column(text_banner, data_table))
 show(layout)

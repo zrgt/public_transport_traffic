@@ -2,7 +2,7 @@ from typing import List
 
 import bokeh
 from bokeh.io import curdoc
-from bokeh.models import HoverTool, CheckboxGroup, CustomJSFilter, CustomJS, Button, Column
+from bokeh.models import HoverTool, CheckboxGroup, CustomJSFilter, CustomJS, Button, Column, CheckboxButtonGroup
 from bokeh.plotting import figure
 from bokeh.tile_providers import get_provider, CARTODBPOSITRON
 
@@ -26,7 +26,7 @@ def init_map_graph(title=GRAPH_TITLE, lon_range=UU_LON_RANGE, lat_range=UU_LAT_R
     graph = figure(x_range=lon_range, y_range=lat_range,
                    plot_width=width, plot_height=height, tools=tools)
     hover = graph.select(dict(type=HoverTool))
-    hover.tooltips = {"Госномер": "@gos_num", "Маршрут": "@route", "Скорость(км/ч)": "@speed", "Время": "@time", "x": "@x", "y": "@y"}
+    hover.tooltips = {"Госномер": "@gos_num", "Маршрут": "@route", "Скорость(км/ч)": "@speed", "В пробке": "@in_jam", "Время": "@time", "x": "@x", "y": "@y"}
     for tool in graph.toolbar.tools:
         if isinstance(tool, bokeh.models.WheelZoomTool):
             graph.toolbar.active_scroll = tool
@@ -80,5 +80,42 @@ def get_checkboxes_with_filter(labels: List[str], column_label: str, source, sel
             checkboxes.active = []
         """))
         widgets.append(clear_all)
+
+    return Column(*widgets), filter
+
+
+
+def get_checkbox_btn_with_filter(labels: List[str], column_label: str, source):
+    """
+    :param labels: names for checkbox labels as list (dataframe must contain it as value to filter)
+    :param column_label: name of column in dataframe
+    :param source: dataframe
+    :return: checkboxes and filter for graph
+    """
+    # routes checkboxes
+    checkboxes = CheckboxButtonGroup(labels=labels, width=65)
+    filter = CustomJSFilter(code='''
+    var selected = checkboxes.active.map(i=>true);
+    var indices = [];
+    var column = source.data[column_label];
+
+    // iterate through rows of data source and see if each satisfies some constraint
+    if(!selected.length){
+        return Array(column.length).fill(true)
+    }
+    
+    for (var i = 0; i < column.length; i++){
+        if(selected.includes(column[i])){
+            indices.push(true);
+        } else {
+            indices.push(false);
+        }
+    }
+    console.log("filter completed");
+    return indices;
+    ''', args=dict(checkboxes=checkboxes, column_label=column_label))
+    checkboxes.js_on_change("active", CustomJS(code="source.change.emit();", args=dict(source=source)))
+
+    widgets = [checkboxes]
 
     return Column(*widgets), filter
