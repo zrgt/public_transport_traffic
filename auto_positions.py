@@ -1,12 +1,14 @@
 import datetime
+import os
 from collections import OrderedDict, defaultdict
 import json
 
 from dataclasses import dataclass
 from typing import List
 
+from natsort import natsorted
+
 import utils
-from marker_namen import MARK_FILES
 
 JAM_SPEED = 8
 
@@ -29,6 +31,8 @@ class Auto:
     def append_position(self, lon, lat, time: str):
         time = datetime.datetime.strptime(time, "%d.%m.%Y %H:%M:%S")
         pos = Position(lon, lat, time)
+        if self.positions.get(time):
+            return
         self.positions[time] = pos
         if len(self.positions) > 2:
             prev_pos = list(self.positions.values())[-2]
@@ -70,8 +74,10 @@ def generate_auto_positions(folder:str, files:List[str]):
             auto.append_position(i["lon"], i["lat"], i["lasttime"])
     return autos
 
+def generate_file(folder: str):
 
-def generate_file(folder:str, files:List[str]):
+    files = os.listdir(folder)
+    files = natsorted(files)
     autos = generate_auto_positions(folder, files)
     final_dict = defaultdict()
 
@@ -90,5 +96,4 @@ def generate_file(folder:str, files:List[str]):
     with open("all_pos.json", "w") as file:
         json.dump(final_dict, file, ensure_ascii=False)
 
-
-generate_file(folder="markers_parser/markers_uu", files=MARK_FILES)
+generate_file(folder="markers_parser/markers_uu_18_11_21")

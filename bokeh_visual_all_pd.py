@@ -18,9 +18,15 @@ start_time = datetime.datetime.now()
 FILE = f"all_pos.json"
 
 #init graph
-graph = init_map_graph(title="Скорость трамвая в среду 1 сентября 2021")
+graph = init_map_graph(title="Скорость трамвая в среду 18 ноября 2021")
 
 df = get_dataframe(FILE)
+# pos = df[(df.speed < 8)][["lat", "lon"]]
+# sf = squareform(pdist(pos))
+# pos["num_near_points"] = (sf < 100).sum(axis=1) / 2.5
+# df["size"] = pos["num_near_points"]
+# df["size"].fillna(7, inplace=True)
+# df["size"] = df["size"].astype("int32")
 
 source_visible = ColumnDataSource(df)
 
@@ -74,8 +80,8 @@ start = datetime.datetime.fromtimestamp(df.timestamp.min())
 end = datetime.datetime.fromtimestamp(df.timestamp.max())
 time_slider = DateRangeSlider(title="Промежуток времени", value=(start, end), start=start, end=end, format="%H:%M", step=10*60*1000)
 time_filter = CustomJSFilter(code='''
-var min_timestamp = time_slider.value[0]/1000 - 7200
-var max_timestamp = time_slider.value[1]/1000 - 7200
+var min_timestamp = time_slider.value[0]/1000 - 3600
+var max_timestamp = time_slider.value[1]/1000 - 3600
 console.log(min_timestamp, max_timestamp);
 
 var indices = [];
@@ -156,10 +162,10 @@ source_visible.selected.js_on_change('indices', CustomJS(args=dict(s1=source_vis
     """)
 )
 columns = [
-        TableColumn(field="gos_num", title="Номер"),
+        TableColumn(field="gos_num", title="Вагон"),
         TableColumn(field="num", title="Маршрут"),
         TableColumn(field="time", title="Время"),
-        TableColumn(field="speed", title="Ск-сть"),
+        TableColumn(field="speed", title="Ск-сть(км/ч)"),
         TableColumn(field="secs_in_jam", title="Интервал(Сек)"),
         TableColumn(field="mins_in_jam", title="Интерв.(Минут)"),
         # TableColumn(field="secs_frm_lst_pos", title="Промежуток(Сек)"),
