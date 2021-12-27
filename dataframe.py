@@ -10,7 +10,7 @@ start_time = datetime.datetime.now()
 FILE = f"all_pos_8_9.json"
 
 
-def get_dataframe(file):
+def get_dataframe(file) -> pd.DataFrame:
     # Open data file
     with open(file, "r", encoding='utf-8') as file:
         # List with lists for each parse iteration
@@ -38,7 +38,7 @@ def get_dataframe(file):
     # fix time: drop day data and change timezone
     def fix_time(row):
         lasttime = datetime.datetime.strptime(row.lasttime, "%d.%m.%Y %H:%M:%S")
-        lasttime = lasttime+datetime.timedelta(hours=8)
+        lasttime = lasttime+datetime.timedelta(hours=7)
         #lasttime = pytz.timezone("Asia/Irkutsk").localize(lasttime)
         row.lasttime = str(lasttime)
         row.time = lasttime.strftime("%H:%M:%S")
