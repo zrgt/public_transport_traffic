@@ -37,6 +37,20 @@ def init_map_graph(title=GRAPH_TITLE, lon_range=UU_LON_RANGE, lat_range=UU_LAT_R
     graph.title.text = title
     return graph
 
+# instantiating the figure object
+def init_interval_graph(title=GRAPH_TITLE, tools=GRAPH_TOOLS):
+    curdoc().theme = THEME
+    graph = figure(width=1000, height=600, x_axis_type='datetime', tools=tools)
+    graph.xaxis.axis_label = "Время"
+    graph.yaxis.axis_label = "Интервал (мин)"
+    hover = graph.select(dict(type=HoverTool))
+    hover.tooltips = {"Госномер": "@gos_num", "Маршрут": "@route", "Время": "@time"}
+    for tool in graph.toolbar.tools:
+        if isinstance(tool, bokeh.models.WheelZoomTool):
+            graph.toolbar.active_scroll = tool
+            break
+    graph.title.text = title
+    return graph
 
 def get_checkboxes_with_filter(labels: List[str], column_label: str, source, select_all_btn=True, clear_all_btn=True):
     """
