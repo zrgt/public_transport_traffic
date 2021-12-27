@@ -43,6 +43,8 @@ def init_interval_graph(title=GRAPH_TITLE, tools=GRAPH_TOOLS):
     graph = figure(width=1000, height=600, x_axis_type='datetime', tools=tools)
     graph.xaxis.axis_label = "Время"
     graph.yaxis.axis_label = "Интервал (мин)"
+    graph.xaxis[0].ticker.desired_num_ticks = 18
+    graph.yaxis[0].ticker.desired_num_ticks = 18
     hover = graph.select(dict(type=HoverTool))
     hover.tooltips = {"Госномер": "@gos_num", "Маршрут": "@route", "Время": "@time"}
     for tool in graph.toolbar.tools:
