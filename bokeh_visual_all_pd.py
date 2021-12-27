@@ -110,6 +110,8 @@ source_visible.selected.js_on_change('indices', CustomJS(args=dict(s1=source_vis
         var inds = cb_obj.indices;
         var d1 = s1.data;
         s2.data = {
+            "x":[],
+            "y":[],
             "lon":[],
             "lat":[],
             "gos_num":[],
@@ -137,6 +139,8 @@ source_visible.selected.js_on_change('indices', CustomJS(args=dict(s1=source_vis
             d2['meters_frm_lst_pos'].push(d1['meters_frm_lst_pos'][inds[i]]);
             d2['lon'].push(d1['lon'][inds[i]]);
             d2['lat'].push(d1['lat'][inds[i]]);
+            d2['x'].push(d1['x'][inds[i]]);
+            d2['y'].push(d1['y'][inds[i]]);
         }
         
         var gos_nums = new Set(d2['gos_num']);
@@ -168,11 +172,15 @@ columns = [
         TableColumn(field="speed", title="Ск-сть(км/ч)"),
         TableColumn(field="secs_in_jam", title="Интервал(Сек)"),
         TableColumn(field="mins_in_jam", title="Интерв.(Минут)"),
+        TableColumn(field="lon", title="lon"),
+        TableColumn(field="lat", title="lat"),
+        TableColumn(field="x", title="x"),
+        TableColumn(field="y", title="y"),
         # TableColumn(field="secs_frm_lst_pos", title="Промежуток(Сек)"),
         # TableColumn(field="meters_frm_lst_pos", title="Промежуток(М)"),
     ]
 text_banner = Paragraph(text="Выбранные геометки", width=200, height=20)
-data_table = DataTable(source=source_table, columns=columns, width=600, height=700, aspect_ratio="auto")
+data_table = DataTable(source=source_table, columns=columns, width=600, height=700, aspect_ratio="auto", selectable=True)
 
 
 view = CDSView(source=source_visible, filters=[time_filter, speed_filter, routes_filter, gos_num_filter, in_jam_filter])
