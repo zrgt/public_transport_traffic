@@ -35,22 +35,17 @@ def get_dataframe(file) -> pd.DataFrame:
 
     df["route"] = df["rtype"]+"-"+df["rnum"]
 
-    # fix time: drop day data and change timezone
-    def fix_time(row):
-        lasttime = datetime.datetime.strptime(row.lasttime, "%d.%m.%Y %H:%M:%S")
-        lasttime = lasttime+datetime.timedelta(hours=7)
-        #lasttime = pytz.timezone("Asia/Irkutsk").localize(lasttime)
-        row.lasttime = str(lasttime)
-        row.time = lasttime.strftime("%H:%M:%S")
-        row.timestamp = lasttime.timestamp()
-        return row
-    df["time"] = None
-    df["timestamp"] = None
-    df = df.apply(fix_time, axis="columns")
+    df["lasttime"] = pd.to_datetime(df["lasttime"], format="%d.%m.%Y %H:%M:%S")
+    df["lasttime"] = df["lasttime"]+datetime.timedelta(hours=8)  # localize time
+    df["timestamp"] = df.lasttime.astype('int64') // 10 ** 9  # seconds
+    df["time"] = df["lasttime"].dt.strftime("%H:%M:%S")
 
     # add column data for point color and fill it with data
-    df["color"] = ""
-    df = df.apply(pd_speed_color, axis="columns")
+    df["color"] = "green"  # default case point is green
+    mask = df['speed'] < 18
+    df.loc[mask, 'color'] = "yellow"
+    mask = df['speed'] < 8
+    df.loc[mask, 'color'] = "red"
 
     # make red (slow) points bigger if there are slow points near
     pos = df[(df.speed < 8)][["lat", "lon"]]
